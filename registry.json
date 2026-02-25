@@ -1,0 +1,24 @@
+{
+  "artworks": [
+    {
+      "artwork_id": "ART-2026-001",
+      "title": "Stillness in Blue",
+      "medium": "Oil on Canvas",
+      "dimensions": "80x60 cm",
+      "creation_date": "2026-02-24",
+      "certificate_date": "2026-02-24",
+      "owner_key": "AB23CD-2026",
+      "image": "stillness-blue.jpg"
+    },
+    {
+      "artwork_id": "ART-2026-002",
+      "title": "Morning Light",
+      "medium": "Acrylic",
+      "dimensions": "50x70 cm",
+      "creation_date": "2026-02-25",
+      "certificate_date": "2026-02-25",
+      "owner_key": "XY98ZT-2026",
+      "image": "morning-light.jpg"
+    }
+  ]
+}

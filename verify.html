@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Artwork Verification</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; line-height: 1.5; }
+    h1 { text-align: center; }
+    img { max-width: 100%; display: block; margin: 20px auto; }
+    input { padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+    button { padding: 10px 15px; cursor: pointer; width: 100%; }
+    #result { font-weight: bold; margin-top: 15px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<h1 id="art-title">Artwork Title</h1>
+<img id="art-image" src="" alt="Artwork">
+
+<p><strong>Medium:</strong> <span id="art-medium"></span></p>
+<p><strong>Dimensions:</strong> <span id="art-dimensions"></span></p>
+<p><strong>Creation Date:</strong> <span id="art-date"></span></p>
+<p><strong>Certificate Issue Date:</strong> <span id="cert-date"></span></p>
+
+<label for="key">Enter your secret key to verify ownership:</label>
+<input type="text" id="key" placeholder="Your secret key here">
+<button id="verify-btn">Verify</button>
+
+<div id="result"></div>
+
+<script>
+  // Helper to get URL parameters
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  const artworkId = getQueryParam('art'); // e.g., ART-2026-001
+
+  fetch('registry.json')
+    .then(res => res.json())
+    .then(data => {
+      const artwork = data.artworks.find(a => a.artwork_id === artworkId);
+      if (!artwork) {
+        document.body.innerHTML = "<h2>Artwork not found.</h2>";
+        return;
+      }
+
+      // Fill in artwork details
+      document.getElementById('art-title').innerText = artwork.title;
+      document.getElementById('art-medium').innerText = artwork.medium;
+      document.getElementById('art-dimensions').innerText = artwork.dimensions;
+      document.getElementById('art-date').innerText = artwork.creation_date;
+      document.getElementById('cert-date').innerText = artwork.certificate_date;
+      document.getElementById('art-image').src = artwork.image;
+
+      // Verification
+      document.getElementById('verify-btn').addEventListener('click', () => {
+        const inputKey = document.getElementById('key').value.trim();
+        if(inputKey === artwork.owner_key){
+          document.getElementById('result').innerText = "✅ Ownership Verified!";
+        } else {
+          document.getElementById('result').innerText = "❌ Key invalid.";
+        }
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      document.body.innerHTML = "<h2>Error loading registry.</h2>";
+    });
+</script>
+
+</body>
+</html>
