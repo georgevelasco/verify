@@ -7,7 +7,7 @@
       "dimensions": "80x60 cm",
       "creation_date": "2026-02-24",
       "certificate_date": "2026-02-24",
-      "owner_hash": "6e0a1f7b3c8d9f2a4b5c6d7e8f90123456789abcdef0123456789abcdef01234",
+      "owner_hash": "9fc826714bdad4535f32f46c40a1b00fcb9bd7cc4abfeda17f798e6e95472e26",
       "image": "images/stillness-blue.jpg"
     },
     {
@@ -19,6 +19,14 @@
       "certificate_date": "2026-02-25",
       "owner_hash": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef",
       "image": "images/morning-light.jpg"
+    },
+    {
+      "title": "asdfs",
+      "medium": "stoneware clay, glaze",
+      "dimensions": "7x 3 x 3",
+      "creation_date": "25-02-2026 01:58:16",
+      "private_key": "486-898-864",
+      "owner_hash": "fca956daa24f6c699a12996aeba2ae14e7e56b6e77c9e4d50bc4211be0e35f36"
     }
   ]
 }

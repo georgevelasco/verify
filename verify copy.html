@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Artwork Ownership</title>
+  <!-- CryptoJS for SHA-256 hashing -->
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; }
+    .verified { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+    img { max-width: 100%; margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Verify Artwork Ownership</h1>
+  <p>Enter the key from your certificate:</p>
+  <input type="text" id="keyInput" placeholder="E.g., D558-587-2E9D" style="width:100%; padding:0.5em;">
+  <button id="verifyBtn">Verify</button>
+  <div id="result" style="margin-top:1em;"></div>
+
+  <script>
+    let registry = [];
+
+    // Load registry.json
+    fetch('registry.json')
+      .then(response => response.json())
+      .then(data => registry = data.artworks);
+
+    document.getElementById('verifyBtn').addEventListener('click', function() {
+      const inputKey = document.getElementById('keyInput').value.trim();
+
+      // Hash input key with SHA-256
+      const inputHash = CryptoJS.SHA256(inputKey).toString();
+
+      // Check against registry
+      const match = registry.find(a => a.owner_hash === inputHash);
+
+      const resultDiv = document.getElementById('result');
+      if(match){
+        resultDiv.innerHTML = `<p class="verified">✅ Ownership Verified!</p>
+                               <p><strong>Title:</strong> ${match.title}</p>
+                               <p><strong>Medium:</strong> ${match.medium}</p>
+                               <p><strong>Dimensions:</strong> ${match.dimensions}</p>
+                               <p><strong>Created:</strong> ${match.creation_date}</p>
+                               <img src="${match.image}" alt="${match.title}">`;
+      } else {
+        resultDiv.innerHTML = `<p class="error">❌ Invalid key. Please check your certificate.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

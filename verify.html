@@ -2,52 +2,253 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Verify Artwork Ownership</title>
-  <!-- CryptoJS for SHA-256 hashing -->
+  <title>Certificate of Authenticity</title>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+
+  <!-- Cormorant font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;600&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; }
-    .verified { color: green; font-weight: bold; }
-    .error { color: red; font-weight: bold; }
-    img { max-width: 100%; margin-top: 1em; }
+    /* Reset and body */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Cormorant", serif;
+      background: #ffffff;
+      color: #000000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-weight: 300;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      width: 100%;
+      background: #ffffff;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .logo {
+      font-family: 'Cormorant', serif;
+      font-size: 36px;
+      font-weight: normal;
+      color: #000000;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      padding: 60px 20px;
+      box-sizing: border-box;
+      transition: all 0.8s ease;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #000000;
+    }
+
+    p.description {
+      font-size: 18px;
+      font-weight: 300;
+      margin-bottom: 40px;
+      color: #000000;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 1px solid #CCCCCC;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      outline: none;
+      box-sizing: border-box;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    input[type="text"]:focus {
+      border-color: #666666;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      background: #4a4d52;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #000000;
+    }
+
+    /* Result area */
+    #result {
+      margin-top: 30px;
+      font-size: 17px;
+      display: none; /* initially hidden */
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .result-wrapper {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .artwork-img {
+      max-width: 250px;
+      width: 100%;
+      border-radius: 3px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .artwork-info {
+      flex: 1;
+      min-width: 200px;
+      text-align: left;
+    }
+
+    .verified-text {
+      color: #008000;
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+
+    .error-text {
+      color: #C00;
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+
+    .verify-again {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #4a4d52;
+      text-align: center;
+    }
+    .verify-again button {
+      margin-top: 6px;
+      background: #4a4d52;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+    .verify-again button:hover {
+      background: #000;
+    }
+
+    @media(max-width: 500px) {
+      .container { padding: 40px 15px; }
+      h1 { font-size: 24px; }
+      p.description { font-size: 16px; }
+      .result-wrapper { flex-direction: column; align-items: center; text-align: center; }
+      .artwork-info { text-align: center; }
+    }
   </style>
 </head>
+
 <body>
-  <h1>Verify Artwork Ownership</h1>
-  <p>Enter the key from your certificate:</p>
-  <input type="text" id="keyInput" placeholder="E.g., D558-587-2E9D" style="width:100%; padding:0.5em;">
-  <button id="verifyBtn">Verify</button>
-  <div id="result" style="margin-top:1em;"></div>
+  <header>
+    <div class="logo">regina torres</div>
+  </header>
+
+  <div class="container" id="formContainer">
+    <h1>Certificate of Authenticity</h1>
+    <p class="description">Verify your artwork using the key from your certificate.</p>
+
+    <input type="text" id="keyInput" placeholder="Enter your key here">
+    <button id="verifyBtn">Verify</button>
+  </div>
+
+  <div id="result"></div>
 
   <script>
     let registry = [];
 
-    // Load registry.json
     fetch('registry.json')
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => registry = data.artworks);
 
-    document.getElementById('verifyBtn').addEventListener('click', function() {
-      const inputKey = document.getElementById('keyInput').value.trim();
+    const formContainer = document.getElementById('formContainer');
+    const resultDiv = document.getElementById('result');
+    const keyInput = document.getElementById('keyInput');
 
-      // Hash input key with SHA-256
-      const inputHash = CryptoJS.SHA256(inputKey).toString();
+    document.getElementById('verifyBtn').addEventListener('click', async function() {
+      const rawKey = keyInput.value.trim();
+      if(!rawKey) return;
 
-      // Check against registry
-      const match = registry.find(a => a.owner_hash === inputHash);
+      const hash = CryptoJS.SHA256(rawKey).toString();
+      const match = registry.find(a => a.owner_hash === hash);
 
-      const resultDiv = document.getElementById('result');
-      if(match){
-        resultDiv.innerHTML = `<p class="verified">✅ Ownership Verified!</p>
-                               <p><strong>Title:</strong> ${match.title}</p>
-                               <p><strong>Medium:</strong> ${match.medium}</p>
-                               <p><strong>Dimensions:</strong> ${match.dimensions}</p>
-                               <p><strong>Created:</strong> ${match.creation_date}</p>
-                               <img src="${match.image}" alt="${match.title}">`;
+      // animate form disappearing
+      formContainer.style.transition = 'all 0.8s ease';
+      formContainer.style.opacity = 0;
+      formContainer.style.transform = 'scale(0.95)';
+
+      // wait for animation
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // remove from layout completely
+      formContainer.style.display = 'none';
+
+      // show results
+      if(match) {
+        resultDiv.innerHTML = `
+          <p class="verified-text">✅ Ownership Verified!</p>
+          <h2>${match.title}</h2>
+          <div class="result-wrapper">
+            <img class="artwork-img" src="${match.image}" alt="${match.title}">
+            <div class="artwork-info">
+              <p><strong>Medium:</strong> ${match.medium}</p>
+              <p><strong>Dimensions:</strong> ${match.dimensions}</p>
+              <p><strong>Created:</strong> ${match.creation_date}</p>
+            </div>
+          </div>
+          <div class="verify-again">
+            <p>Do you want to verify another artwork?</p>
+            <button onclick="resetForm()">Verify Another</button>
+          </div>
+        `;
       } else {
-        resultDiv.innerHTML = `<p class="error">❌ Invalid key. Please check your certificate.</p>`;
+        resultDiv.innerHTML = `<p class="error-text">❌ Invalid key — please check your certificate.</p>`;
       }
+
+      resultDiv.style.display = 'block';
+      setTimeout(() => resultDiv.style.opacity = 1, 50);
     });
+
+    function resetForm() {
+      resultDiv.style.opacity = 0;
+      setTimeout(() => {
+        resultDiv.style.display = 'none';
+        keyInput.value = '';
+        formContainer.style.display = 'block';
+        formContainer.style.opacity = 1;
+        formContainer.style.transform = 'scale(1)';
+      }, 300);
+    }
   </script>
 </body>
 </html>
