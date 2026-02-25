@@ -2,73 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Artwork Verification</title>
+  <title>Verify Artwork Ownership</title>
+  <!-- CryptoJS for SHA-256 hashing -->
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; line-height: 1.5; }
-    h1 { text-align: center; }
-    img { max-width: 100%; display: block; margin: 20px auto; }
-    input { padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-    button { padding: 10px 15px; cursor: pointer; width: 100%; }
-    #result { font-weight: bold; margin-top: 15px; text-align: center; }
+    body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; }
+    .verified { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+    img { max-width: 100%; margin-top: 1em; }
   </style>
 </head>
 <body>
+  <h1>Verify Artwork Ownership</h1>
+  <p>Enter the key from your certificate:</p>
+  <input type="text" id="keyInput" placeholder="E.g., D558-587-2E9D" style="width:100%; padding:0.5em;">
+  <button id="verifyBtn">Verify</button>
+  <div id="result" style="margin-top:1em;"></div>
 
-<h1 id="art-title">Artwork Title</h1>
-<img id="art-image" src="" alt="Artwork">
+  <script>
+    let registry = [];
 
-<p><strong>Medium:</strong> <span id="art-medium"></span></p>
-<p><strong>Dimensions:</strong> <span id="art-dimensions"></span></p>
-<p><strong>Creation Date:</strong> <span id="art-date"></span></p>
-<p><strong>Certificate Issue Date:</strong> <span id="cert-date"></span></p>
+    // Load registry.json
+    fetch('registry.json')
+      .then(response => response.json())
+      .then(data => registry = data.artworks);
 
-<label for="key">Enter your secret key to verify ownership:</label>
-<input type="text" id="key" placeholder="Your secret key here">
-<button id="verify-btn">Verify</button>
+    document.getElementById('verifyBtn').addEventListener('click', function() {
+      const inputKey = document.getElementById('keyInput').value.trim();
 
-<div id="result"></div>
+      // Hash input key with SHA-256
+      const inputHash = CryptoJS.SHA256(inputKey).toString();
 
-<script>
-  // Helper to get URL parameters
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
+      // Check against registry
+      const match = registry.find(a => a.owner_hash === inputHash);
 
-  const artworkId = getQueryParam('art'); // e.g., ART-2026-001
-
-  fetch('registry.json')
-    .then(res => res.json())
-    .then(data => {
-      const artwork = data.artworks.find(a => a.artwork_id === artworkId);
-      if (!artwork) {
-        document.body.innerHTML = "<h2>Artwork not found.</h2>";
-        return;
+      const resultDiv = document.getElementById('result');
+      if(match){
+        resultDiv.innerHTML = `<p class="verified">✅ Ownership Verified!</p>
+                               <p><strong>Title:</strong> ${match.title}</p>
+                               <p><strong>Medium:</strong> ${match.medium}</p>
+                               <p><strong>Dimensions:</strong> ${match.dimensions}</p>
+                               <p><strong>Created:</strong> ${match.creation_date}</p>
+                               <img src="${match.image}" alt="${match.title}">`;
+      } else {
+        resultDiv.innerHTML = `<p class="error">❌ Invalid key. Please check your certificate.</p>`;
       }
-
-      // Fill in artwork details
-      document.getElementById('art-title').innerText = artwork.title;
-      document.getElementById('art-medium').innerText = artwork.medium;
-      document.getElementById('art-dimensions').innerText = artwork.dimensions;
-      document.getElementById('art-date').innerText = artwork.creation_date;
-      document.getElementById('cert-date').innerText = artwork.certificate_date;
-      document.getElementById('art-image').src = artwork.image;
-
-      // Verification
-      document.getElementById('verify-btn').addEventListener('click', () => {
-        const inputKey = document.getElementById('key').value.trim();
-        if(inputKey === artwork.owner_key){
-          document.getElementById('result').innerText = "✅ Ownership Verified!";
-        } else {
-          document.getElementById('result').innerText = "❌ Key invalid.";
-        }
-      });
-    })
-    .catch(err => {
-      console.error(err);
-      document.body.innerHTML = "<h2>Error loading registry.</h2>";
     });
-</script>
-
+  </script>
 </body>
 </html>
